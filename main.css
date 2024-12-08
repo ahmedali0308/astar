@@ -1,0 +1,67 @@
+* {
+    font-family: "Iowan Old Style",Cambria,Georgia,serif;
+    font-size: calc(10px + 0.5vw);
+    padding: 0;
+    margin: 0;
+}
+
+:root {
+    --white: white;
+    --black: black;
+    --red: #AA4A44;
+    --gray: #898989;
+}
+
+.white { color: var(--white); }
+.black { color: var(--black); }
+.red { color: var(--red); }
+.gray { color: var(--gray); }
+.shadow {
+    text-shadow: 2px 2px 2px var(--black);
+}
+
+h1 {
+    font-size: 2em;
+}
+h2 {
+    font-size: 1.5em;
+}
+p {
+    font-size: 1em;
+}
+ul {
+    text-decoration: none;
+}
+
+/* MAIN STYLING PART */
+
+nav {
+    background-color: var(--gray);
+    padding: 15px;
+    text-align: center;
+}
+
+.grid {
+    padding: 3vw;
+    display: flex;
+    justify-content: center;
+}
+.grid .gridy {
+    display: flex;
+    flex-direction: column;
+}
+.grid .gridx {
+    display: flex;
+    flex-direction: row;
+}
+.grid .gridbox {
+    width: 3vw;
+    height: 3vw;
+}
+.grid .gridbox .gridcontent {
+    background-color: var(--black);
+    margin: auto;
+    width: 0%;
+    height: 0%;
+    transition-duration: 0.1s;
+}
