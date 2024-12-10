@@ -95,7 +95,10 @@ main {
 }
 
 .dropdownlist button {
-    padding: 0.675vw 2vw;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #000000;
+    padding: 0.375vw 2vw;
     font-size: 0.7rem;
 }
 
