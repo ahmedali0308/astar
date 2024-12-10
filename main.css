@@ -100,7 +100,12 @@ main {
     border: 1px solid #000000;
     padding: 0.375vw 2vw;
     font-size: 0.7rem;
+    cursor: pointer;
 }
+.dropdownlist button:hover {
+    background-color: var(--gray);
+}
+
 
 
 

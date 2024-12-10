@@ -1,10 +1,10 @@
-import { Node } from './node.js';
-
 const gridboxes = document.getElementsByClassName('gridbox');
 const gridcontainer = document.getElementById('maingrid').children[0];
 const blocksselector = document.getElementById('blocks');
+const pathbutton = document.getElementById('pathbutton');
 var _mousedown = false;
 var _currentIsWall = false;
+var _drawing = false;
 
 // GRID SIZE
 const gridX = 30;
@@ -48,12 +48,19 @@ function unlockGrid(){
         if (b.classList.contains('locked')) {
             b.classList.remove('locked');
         };
+        if (b.classList.contains('path')) {
+            b.classList.remove('path');
+            b.style.backgroundColor = "";
+            b.style.width = "0%";
+            b.style.height = "0%";
+        };
     });
 }
 
 // THIS TOGGLES NODE b TO EITHER DISPLAY A WALL OR NOT (NODE b IS A HTML ELEMENT)
 function toggleBox(b,override=false,selector=blocksselector.value){
     //const val = b.classList.contains('clicked') ? "0%" : "100%";
+    undrawPath();
     switch(selector){
         case "wall":
             if (getNodeFromElement(b) == startNode || getNodeFromElement(b) == endNode) return;
@@ -96,6 +103,7 @@ function toggleBox(b,override=false,selector=blocksselector.value){
             endNodeContent.style.height = "100%";
             break;
     }
+    drawPath(findPath(startNode,endNode));
 }
 
 // THIS DOES THE SAME THING AS toggleBox(b) BUT USES INDICIES IN AN ARRAY[i][j] STARTING AT 0,0
@@ -158,13 +166,77 @@ function generateGrid(x,y){
     setupGrid();
 }
 
+function undrawPath(){
+    _drawing = false;
+    Array.from(gridboxes).forEach(a => {
+        const b = a.children[0];
+        if (b.classList.contains('path')) {
+            undrawPathBox(b);
+        };
+        if (b.classList.contains('pathvis')) {
+            undrawPathBoxVis(b);
+        };
+    });
+}
+
+function undrawPathBox(b){
+    b.classList.remove('path');
+    b.style.backgroundColor = "";
+    b.style.width = "0%";
+    b.style.height = "0%";
+}
+
+function undrawPathBoxVis(b){
+    b.classList.remove('pathvis');
+    b.style.backgroundColor = "";
+    b.style.width = "0%";
+    b.style.height = "0%";
+}
+
+function drawPathBox(b){
+    b.classList.add("path");
+    b.style.backgroundColor = "blue";
+    b.style.width = "100%";
+    b.style.height = "100%";
+}
+
+function drawPath(path){
+    undrawPath();
+    for(let node of path){
+        if (node == startNode || node == endNode) return;
+        drawPathBox(node.element.children[0])
+    }
+}
+
+pathbutton.addEventListener("click",async function(){
+    if (startNode == null || endNode == null) return;
+    undrawPath();
+    await findPathVis(startNode,endNode,true);
+})
+
 generateGrid(gridX,gridY);
+for (var i = 2; i < 5; i++){
+    for (var j = 1; j < 4; j++){
+        toggleBoxFromArray(i,j);
+    }
+}
+for (var i = 10; i < 15; i++){
+    for (var j = 2; j < 5; j++){
+        toggleBoxFromArray(i,j);
+    }
+}
+for (var i = 12; i < 15; i++){
+    for (var j = 7; j < 10; j++){
+        toggleBoxFromArray(i,j);
+    }
+}
+for (var i = 20; i < 23; i++){
+    for (var j = 5; j < 9; j++){
+        toggleBoxFromArray(i,j);
+    }
+}
 toggleBoxFromArray(Math.floor(gridX/4),Math.floor(gridY/1.5),"start");
 toggleBoxFromArray(Math.floor(gridX/1.5),Math.floor(gridY/4),"end");
-for (var i = 0; i < gridX; i++){  
-    await toggleBoxFromArray(i,Math.round(convertRange(i,[0,gridX-1],[0,gridY-1])));
-}
-console.log(grid);
 
 
 
