@@ -1,24 +1,105 @@
-var gridboxes = document.getElementsByClassName('gridbox');
+import { Node } from './node.js';
+
+const gridboxes = document.getElementsByClassName('gridbox');
 const gridcontainer = document.getElementById('maingrid').children[0];
+const blocksselector = document.getElementById('blocks');
 var _mousedown = false;
+var _currentIsWall = false;
 
 // GRID SIZE
 const gridX = 30;
 const gridY = 10;
 
+// NODE SETTINGS (A*)
+const nodeRadius = 1;
+var grid;
+var startNode;
+var endNode;
+
+// HELPER FUNCTIONS
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function toggleBox(b){
-    const val = b.classList.contains('clicked') ? "0%" : "100%";
-    b.style.width = val;
-    b.style.height = val;
-    b.classList.toggle('clicked');
-    b.classList.add('locked');
+function convertRange( value, r1, r2 ) { 
+    return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
 }
 
-async function toggleBoxFromArray(i,j){
+function getNodeFromElement(b){
+    const x = b.parentElement.style.order;
+    const y = b.parentElement.parentElement.style.order;
+    return grid[x][y];
+}
+
+// THIS LOCKS THE GRID SO THAT NO NODE CAN BE EDITED
+function lockGrid(){
+    Array.from(gridboxes).forEach(a => {
+        const b = a.children[0];
+        if (!b.classList.contains('locked')) {
+            b.classList.add('locked');
+        };
+    });
+}
+
+// THIS UNLOCKS THE GRID SO THAT EVERY NODE CAN BE EDITED
+function unlockGrid(){
+    Array.from(gridboxes).forEach(a => {
+        const b = a.children[0];
+        if (b.classList.contains('locked')) {
+            b.classList.remove('locked');
+        };
+    });
+}
+
+// THIS TOGGLES NODE b TO EITHER DISPLAY A WALL OR NOT (NODE b IS A HTML ELEMENT)
+function toggleBox(b,override=false,selector=blocksselector.value){
+    //const val = b.classList.contains('clicked') ? "0%" : "100%";
+    switch(selector){
+        case "wall":
+            if (getNodeFromElement(b) == startNode || getNodeFromElement(b) == endNode) return;
+            b.style.backgroundColor = "black";
+            var val = _currentIsWall ? "0%" : "100%";
+            if (override) val = b.classList.contains('clicked') ? "0%" : "100%";
+            b.style.width = val;
+            b.style.height = val;
+            if (val == "100%") b.classList.add('clicked');
+            else b.classList.remove('clicked');
+            getNodeFromElement(b).walkable = !b.classList.contains('clicked');
+            b.classList.add('locked');
+            break;
+        case "start":
+            if (getNodeFromElement(b) == endNode || getNodeFromElement(b).walkable == false) return;
+            b.style.backgroundColor = "red";
+            var startNodeContent;
+            if (startNode != null){
+                startNodeContent = startNode.element.children[0];
+                startNodeContent.style.width = "0%";
+                startNodeContent.style.height = "0%";
+            }
+            startNode = getNodeFromElement(b);
+            startNodeContent = startNode.element.children[0];
+            startNodeContent.style.width = "100%";
+            startNodeContent.style.height = "100%";
+            break;
+        case "end":
+            if (getNodeFromElement(b) == startNode || getNodeFromElement(b).walkable == false) return;
+            b.style.backgroundColor = "green";
+            var endNodeContent;
+            if (endNode != null){
+                endNodeContent = endNode.element.children[0];
+                endNodeContent.style.width = "0%";
+                endNodeContent.style.height = "0%";
+            }
+            endNode = getNodeFromElement(b);
+            endNodeContent = endNode.element.children[0];
+            endNodeContent.style.width = "100%";
+            endNodeContent.style.height = "100%";
+            break;
+    }
+}
+
+// THIS DOES THE SAME THING AS toggleBox(b) BUT USES INDICIES IN AN ARRAY[i][j] STARTING AT 0,0
+async function toggleBoxFromArray(j,i,selector=blocksselector.value){
     var b = null;
     await sleep(50);
     try {
@@ -26,34 +107,37 @@ async function toggleBoxFromArray(i,j){
     } catch (error){
         console.log("There was an Error trying to toggle Box["+i+"]["+j+"]: "+error);
     }
-    if (b) toggleBox(b);
+    if (b) toggleBox(b,true,selector);
 }
 
+// ADD EVENT LISTENERS TO THE GRID ELEMENT
 function setupGrid(){
     Array.from(gridboxes).forEach(gridbox => {
         const gridcontent = gridbox.children[0];
         gridbox.addEventListener("mousedown",function(){
             _mousedown = true;
+            _currentIsWall = gridcontent.classList.contains('clicked');
             unlockGrid();
-            if (gridcontent.classList.contains('locked')) return;
             toggleBox(gridcontent);
         })
         gridbox.addEventListener("mousemove",function(){
             if (gridcontent.classList.contains('locked')) return;
             if (_mousedown) toggleBox(gridcontent);
         })
-        gridbox.addEventListener("touchmove",function(){
-            if (gridcontent.classList.contains('locked')) return;
-            toggleBox(gridcontent);
-        })
     });
 }
+document.body.addEventListener("mouseup",function(){_mousedown = false;});
 
+// GENERATE THE BOX ELEMENTS IN THE GRID
 function generateGrid(x,y){
     // y times gridx
     // in y: x times gridbox->gridcontent
     x = Math.min(30,x);
 
+    grid = new Array(x);
+    for (var i=0; i<x; i++){
+        grid[i] = new Array(y);
+    }
     for (var i=0; i<y; i++){
         var gridRow = document.createElement("div");
         gridRow.classList.add("gridx");
@@ -66,59 +150,35 @@ function generateGrid(x,y){
             gridbox.append(gridcontent);
             gridRow.append(gridbox);
             gridbox.style.order = j;
+            grid[j][i] = new Node([j,i],true,gridbox);
         }
         gridcontainer.append(gridRow);
         gridRow.style.order = i;
     }
-
     setupGrid();
 }
 
-function lockGrid(){
-    Array.from(gridboxes).forEach(a => {
-        const b = a.children[0];
-        if (!b.classList.contains('locked')) {
-            b.classList.add('locked');
-        };
-    });
-}
-
-function unlockGrid(){
-    Array.from(gridboxes).forEach(a => {
-        const b = a.children[0];
-        if (b.classList.contains('locked')) {
-            b.classList.remove('locked');
-        };
-    });
-}
-
-document.body.addEventListener("mouseup",function(){
-    _mousedown = false;
-});
-
 generateGrid(gridX,gridY);
-
-function convertRange( value, r1, r2 ) { 
-    return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
-}
+toggleBoxFromArray(Math.floor(gridX/4),Math.floor(gridY/1.5),"start");
+toggleBoxFromArray(Math.floor(gridX/1.5),Math.floor(gridY/4),"end");
 for (var i = 0; i < gridX; i++){  
-    await toggleBoxFromArray(Math.round(convertRange(i,[0,gridX-1],[0,gridY-1])),i);
+    await toggleBoxFromArray(i,Math.round(convertRange(i,[0,gridX-1],[0,gridY-1])));
 }
+console.log(grid);
 
-async function test(i){
-    for (var j = 0; j < gridX; j++){  
-        await toggleBoxFromArray(i,j);
-    }
-}
-for (var i = 1; i < gridY; i++){  
-    test(i);
-}
-await test(0);
-for (var i = 0; i < gridY; i++){  
-    test(i);
-}
 
-// import { Node } from './node.js';
+
+
+
+
+
+
+
+
+
+
+
+
 
 // const canvas = document.getElementById("can");
 // const ctx = canvas.getContext("2d");

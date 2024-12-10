@@ -41,8 +41,13 @@ nav {
     text-align: center;
 }
 
-.grid {
+main {
     padding: 3vw;
+    display: flex;
+    flex-direction: column;
+    gap: 2vw;
+}
+.grid {
     display: flex;
     justify-content: center;
 }
@@ -69,6 +74,36 @@ nav {
     height: 0%;
     transition-duration: 0.1s;
 }
+
+.dropdownlist {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 3vw;
+    gap: 1vw;
+}
+.dropdownlist select {
+    appearance: none;
+    width: 85%;
+    font-size: 1rem;
+    padding: 0.675vw 6vw 0.675vw 1vw;
+    background-color: #fff;
+    border: 1px solid #000000;
+    border-radius: 0.25rem;
+    color: #000;
+    cursor: pointer;
+}
+
+.dropdownlist button {
+    padding: 0.675vw 2vw;
+    font-size: 0.7rem;
+}
+
+
+
+
+
+
 canvas, #candiv{
     border:1px solid black;
     display: flex;
