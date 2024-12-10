@@ -67,6 +67,9 @@ main {
     border: 1px solid black;
     border-radius: 0.3vw;
 }
+.grid .gridbox:hover{
+    cursor: pointer;
+}
 .grid .gridbox .gridcontent {
     background-color: var(--black);
     margin: auto;
