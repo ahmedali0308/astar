@@ -6,6 +6,10 @@ var _mousedown = false;
 const gridX = 30;
 const gridY = 10;
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function toggleBox(b){
     const val = b.classList.contains('clicked') ? "0%" : "100%";
     b.style.width = val;
@@ -14,8 +18,9 @@ function toggleBox(b){
     b.classList.add('locked');
 }
 
-function toggleBoxFromArray(i,j){
+async function toggleBoxFromArray(i,j){
     var b = null;
+    await sleep(50);
     try {
         b = gridcontainer.children[i].children[j].children[0];
     } catch (error){
@@ -97,7 +102,20 @@ function convertRange( value, r1, r2 ) {
     return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
 }
 for (var i = 0; i < gridX; i++){  
-    toggleBoxFromArray(Math.round(convertRange(i,[0,gridX-1],[0,gridY-1])),i);
+    await toggleBoxFromArray(Math.round(convertRange(i,[0,gridX-1],[0,gridY-1])),i);
+}
+
+async function test(i){
+    for (var j = 0; j < gridX; j++){  
+        await toggleBoxFromArray(i,j);
+    }
+}
+for (var i = 1; i < gridY; i++){  
+    test(i);
+}
+await test(0);
+for (var i = 0; i < gridY; i++){  
+    test(i);
 }
 
 // import { Node } from './node.js';
