@@ -125,8 +125,19 @@ function setupGrid(){
         gridbox.addEventListener("mousedown",function(){
             _mousedown = true;
             _currentIsWall = gridcontent.classList.contains('clicked');
+            switch (gridbox.children[0].style.backgroundColor){
+                case "black":
+                    blocksselector.value = "wall";
+                    break;
+                case "red":
+                    blocksselector.value = "start";
+                    break;
+                case "green":
+                    blocksselector.value = "end";
+                    break;
+            }
             unlockGrid();
-            toggleBox(gridcontent);
+            toggleBox(gridcontent,blocksselector.value);
         })
         gridbox.addEventListener("mousemove",function(){
             if (gridcontent.classList.contains('locked')) return;
